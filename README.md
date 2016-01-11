@@ -11,7 +11,7 @@ A shell script to organize your alias in command line.
 ```
 - add alias to your startup profile (ex: ~/.bash_profile)
 ```bash
-echo "alias al='. ~/.aliasme/aliasme.sh'" >> ~/.bash_profile
+echo "source ~/.aliasme/aliasme.sh" >> ~/.bash_profile
 ```
 
 ## Usage
