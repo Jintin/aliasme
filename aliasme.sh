@@ -34,6 +34,7 @@ remove() {
 		read -pr "Input name to remove:" name
 	fi
 
+	touch ~/.aliasme/listtemp
 	# read and replace file
 	while read line
 	do
