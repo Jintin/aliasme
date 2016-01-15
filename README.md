@@ -1,5 +1,5 @@
 # aliasme
-
+[![Build Status](https://travis-ci.org/Jintin/aliasme.svg?branch=master)](https://travis-ci.org/Jintin/aliasme)
 A shell script to organize your alias in command line.
 
 ## Installation
