@@ -88,6 +88,17 @@ if [ ! -z $1 ]; then
 		add $2 $3
 	elif [ $1 = "rm" ]; then
 		remove $2
+	elif [ $1 = "-h" ]; then
+		echo "Usage:"
+        echo "al add [name] [value]        # add alias with name and value"
+        echo "al rm [name]                 # remove alias by name"
+        echo "al ls                        # alias list"
+        echo "al [name]                    # execute alias associate with [name]"
+		echo "al -h                        # version information"
+        echo "al -v                        # help"
+	elif [ $1 = "-v" ]; then
+		echo "aliasme 1.0"
+		echo "visit https://github.com/Jintin/aliasme for more information"
 	else
 		jump $1
 	fi
