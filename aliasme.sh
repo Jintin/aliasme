@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-list() {
+function list() {
 	while read line
 	do
 		echo $line #name
@@ -9,7 +9,7 @@ list() {
 	done < ~/.aliasme/list
 }
 
-add() {
+function add() {
 	#read name
 	name=$1
 	if [ -z $1 ]; then
@@ -25,9 +25,10 @@ add() {
 
 	echo $name >> ~/.aliasme/list
 	echo $path >> ~/.aliasme/list
+	autocomplete
 }
 
-remove() {
+function remove() {
 	#read name
 	name=$1
 	if [ -z $1 ]; then
@@ -45,9 +46,10 @@ remove() {
 		fi
 	done < ~/.aliasme/list
 	mv ~/.aliasme/listtemp ~/.aliasme/list
+	autocomplete
 }
 
-jump() {
+function jump() {
 	while read line
 	do
 		if [ $1 = $line ]; then
@@ -59,7 +61,7 @@ jump() {
 	echo "not found"
 }
 
-auto()
+function bashauto()
 {
 	local cur prev opts
 	COMPREPLY=()
@@ -72,34 +74,48 @@ auto()
 		opts+=" $line"
 		read line
 	done < ~/.aliasme/list
-	#echo $opts
-	#opts="--help --verbose --version"
 	COMPREPLY=( $(compgen -W "${opts}" ${cur}) )
 	return 0
 }
 
-alias al='. ~/.aliasme/aliasme.sh'
-complete -F auto al
-
-if [ ! -z $1 ]; then
-	if [ $1 = "ls" ]; then
-		list
-	elif [ $1 = "add" ]; then
-		add $2 $3
-	elif [ $1 = "rm" ]; then
-		remove $2
-	elif [ $1 = "-h" ]; then
-		echo "Usage:"
-        echo "al add [name] [value]        # add alias with name and value"
-        echo "al rm [name]                 # remove alias by name"
-        echo "al ls                        # alias list"
-        echo "al [name]                    # execute alias associate with [name]"
-		echo "al -h                        # version information"
-        echo "al -v                        # help"
-	elif [ $1 = "-v" ]; then
-		echo "aliasme 1.0"
-		echo "visit https://github.com/Jintin/aliasme for more information"
+function autocomplete()
+{
+	if [ $ZSH_VERSION ]; then
+		opts=""
+		while read line
+		do
+			opts+="$line "
+			read line
+		done < ~/.aliasme/list
+		compctl -k "($opts)" al
 	else
-		jump $1
+		complete -F bashauto al
 	fi
-fi
+}
+
+autocomplete
+
+function al(){
+	if [ ! -z $1 ]; then
+		if [ $1 = "ls" ]; then
+			list
+		elif [ $1 = "add" ]; then
+			add $2 $3
+		elif [ $1 = "rm" ]; then
+			remove $2
+		elif [ $1 = "-h" ]; then
+			echo "Usage:"
+			echo "al add [name] [value]        # add alias with name and value"
+			echo "al rm [name]                 # remove alias by name"
+			echo "al ls                        # alias list"
+			echo "al [name]                    # execute alias associate with [name]"
+			echo "al -h                        # version information"
+			echo "al -v                        # help"
+		elif [ $1 = "-v" ]; then
+			echo "aliasme 1.1"
+			echo "visit https://github.com/Jintin/aliasme for more information"
+		else
+			jump $1
+		fi
+	fi
+}
