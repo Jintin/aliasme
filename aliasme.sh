@@ -1,15 +1,14 @@
 #!/usr/bin/env bash
 
-function list() {
-	while read line
+_list() {
+	while read name
 	do
-		echo $line #name
-		read line
-		echo "   :$line" #value
+		read value
+		echo "$name : $value"
 	done < ~/.aliasme/list
 }
 
-function add() {
+_add() {
 	#read name
 	name=$1
 	if [ -z $1 ]; then
@@ -17,24 +16,24 @@ function add() {
 	fi
 
 	#read path
-	path=$2
+	path_alias=$2
 	if [ -z $2 ]; then
-		read -ep "Input path to add:" path
+		read -ep "Input path to add:" path_alias
 	fi
-	path=$(cd $path;pwd)
+	path_alias=$(cd $path_alias;pwd)
 
 	echo $name >> ~/.aliasme/list
-	echo $path >> ~/.aliasme/list
-	autocomplete
+	echo $path_alias >> ~/.aliasme/list
+
+	_autocomplete
 }
 
-function remove() {
+_remove() {
 	#read name
 	name=$1
 	if [ -z $1 ]; then
 		read -pr "Input name to remove:" name
 	fi
-
 	touch ~/.aliasme/listtemp
 	# read and replace file
 	while read line
@@ -46,10 +45,10 @@ function remove() {
 		fi
 	done < ~/.aliasme/list
 	mv ~/.aliasme/listtemp ~/.aliasme/list
-	autocomplete
+	_autocomplete
 }
 
-function jump() {
+_jump() {
 	while read line
 	do
 		if [ $1 = $line ]; then
@@ -61,7 +60,7 @@ function jump() {
 	echo "not found"
 }
 
-function bashauto()
+_bashauto()
 {
 	local cur prev opts
 	COMPREPLY=()
@@ -78,7 +77,7 @@ function bashauto()
 	return 0
 }
 
-function autocomplete()
+_autocomplete()
 {
 	if [ $ZSH_VERSION ]; then
 		opts=""
@@ -93,16 +92,16 @@ function autocomplete()
 	fi
 }
 
-autocomplete
+_autocomplete
 
-function al(){
+al(){
 	if [ ! -z $1 ]; then
 		if [ $1 = "ls" ]; then
-			list
+			_list
 		elif [ $1 = "add" ]; then
-			add $2 $3
+			_add $2 $3
 		elif [ $1 = "rm" ]; then
-			remove $2
+			_remove $2
 		elif [ $1 = "-h" ]; then
 			echo "Usage:"
 			echo "al add [name] [value]        # add alias with name and value"
@@ -112,10 +111,10 @@ function al(){
 			echo "al -h                        # version information"
 			echo "al -v                        # help"
 		elif [ $1 = "-v" ]; then
-			echo "aliasme 1.1"
+			echo "aliasme 1.1.1"
 			echo "visit https://github.com/Jintin/aliasme for more information"
 		else
-			jump $1
+			_jump $1
 		fi
 	fi
 }
