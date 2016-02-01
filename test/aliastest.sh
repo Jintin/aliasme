@@ -28,9 +28,9 @@ testAlias() {
 testAdd() {
   _add $1 $2
   if [[ ! -z $3 ]]; then
-    assert _list "$3\n$1\n   :$2"
+    assert _list "$3\n$1 : $2"
   else
-    assert _list "$1\n   :$2"
+    assert _list "$1 : $2"
   fi
 }
 
