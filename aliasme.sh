@@ -88,7 +88,7 @@ _autocomplete()
 		done < ~/.aliasme/list
 		compctl -k "($opts)" al
 	else
-		complete -F bashauto al
+		complete -F _bashauto al
 	fi
 }
 
