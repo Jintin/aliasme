@@ -80,6 +80,7 @@ _bashauto()
 _autocomplete()
 {
 	if [ $ZSH_VERSION ]; then
+		# zsh
 		opts=""
 		while read line
 		do
@@ -88,6 +89,7 @@ _autocomplete()
 		done < ~/.aliasme/list
 		compctl -k "($opts)" al
 	else
+		# bash
 		complete -F _bashauto al
 	fi
 }
