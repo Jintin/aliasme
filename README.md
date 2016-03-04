@@ -18,12 +18,12 @@ echo "source ~/.aliasme/aliasme.sh" >> ~/.bash_profile
 ## Usage
 
 ```bash
-al add [name] [value]        # add alias with name and value
-al rm [name]                 # remove alias by name
-al ls                        # alias list
-al [name]                    # execute alias associate with [name]
-al -v                        # version information
-al -h                        # help
+$ al add [name] [value]        # add alias with name and value
+$ al rm [name]                 # remove alias by name
+$ al ls                        # alias list
+$ al [name]                    # execute alias associate with [name]
+$ al -v                        # version information
+$ al -h                        # help
 ```
 
 ## Contributing
