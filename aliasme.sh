@@ -110,10 +110,10 @@ al(){
 			echo "al rm [name]                 # remove alias by name"
 			echo "al ls                        # alias list"
 			echo "al [name]                    # execute alias associate with [name]"
-			echo "al -h                        # version information"
-			echo "al -v                        # help"
+			echo "al -v                        # version information"
+			echo "al -h                        # help"
 		elif [ $1 = "-v" ]; then
-			echo "aliasme 1.1.1"
+			echo "aliasme 1.1.2"
 			echo "visit https://github.com/Jintin/aliasme for more information"
 		else
 			_jump $1
