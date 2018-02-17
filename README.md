@@ -1,4 +1,5 @@
 # aliasme
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/dc29953069bf43438f4abac2629e4b5a)](https://app.codacy.com/app/Jintin/aliasme?utm_source=github.com&utm_medium=referral&utm_content=Jintin/aliasme&utm_campaign=badger)
 [![Build Status](https://travis-ci.org/Jintin/aliasme.svg?branch=master)](https://travis-ci.org/Jintin/aliasme)
 [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/alebcay/awesome-shell)
 
