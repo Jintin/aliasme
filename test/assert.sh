@@ -28,7 +28,7 @@ for arg in $args; do
     case "$arg" in
         -h)
             echo "$0 [-vxid] [--verbose] [--stop] [--invariant] [--discover]"
-            echo "`sed 's/./ /g' <<< "$0"` [-h] [--help]"
+            echo "$(sed 's/./ /g' <<< "$0") [-h] [--help]"
             exit 0;;
         --help)
             cat <<EOF

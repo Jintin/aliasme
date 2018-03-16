@@ -62,10 +62,9 @@ _jump() {
 
 _bashauto()
 {
-	local cur prev opts
+	local cur opts
 	COMPREPLY=()
 	cur="${COMP_WORDS[COMP_CWORD]}"
-	prev="${COMP_WORDS[COMP_CWORD-1]}"
 
 	opts=""
 	while read line
