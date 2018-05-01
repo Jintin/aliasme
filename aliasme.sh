@@ -65,52 +65,60 @@ _remove() {
 	if [ -z $1 ]; then
 		read -pr "Input name to remove:" name
 	fi
-	touch ~/.aliasme/pathtemp
-	touch ~/.aliasme/cmdtemp
-	# read and replace file
-	while read line
-	do
-		if [ $line = $name ]; then
-			read line #skip one more line
-		else
-			echo $line >> ~/.aliasme/pathtemp
-		fi
-	done < ~/.aliasme/path
-	mv ~/.aliasme/pathtemp ~/.aliasme/path
 
-	while read line
-	do
-		if [ $line = $name ]; then
-			read line #skip one more line
-		else
-			echo $line >> ~/.aliasme/cmdtemp
-		fi
-	done < ~/.aliasme/cmd
-	mv ~/.aliasme/cmdtemp ~/.aliasme/cmd
+	# read and replace file
+    if [ -s ~/.aliasme/path ];then
+        touch ~/.aliasme/pathtemp
+    	while read line
+    	do
+    		if [ $line = $name ]; then
+    			read line #skip one more line
+    		else
+    			echo $line >> ~/.aliasme/pathtemp
+    		fi
+    	done < ~/.aliasme/path
+        mv ~/.aliasme/pathtemp ~/.aliasme/path
+    fi
+    if [ -s ~/.aliasme/cmd ];then
+        touch ~/.aliasme/cmdtemp
+    	while read line
+    	do
+    		if [ $line = $name ]; then
+    			read line #skip one more line
+    		else
+    			echo $line >> ~/.aliasme/cmdtemp
+    		fi
+    	done < ~/.aliasme/cmd
+    	mv ~/.aliasme/cmdtemp ~/.aliasme/cmd
+    fi
 	_autocomplete
 }
 
 _jump() {
-	while read line
-	do
-		if [ $1 = $line ]; then
-			read line
-			cd $line
-			return 0
-		fi
-	done < ~/.aliasme/path
+    if [ -s ~/.aliasme/path ];then
+    	while read line
+    	do
+    		if [ $1 = $line ]; then
+    			read line
+    			cd $line
+    			return 0
+    		fi
+    	done < ~/.aliasme/path
+    fi
 	return 1
 }
 
 _excute() {
-	while read line
-	do
-		if [ $1 = $line ]; then
-			read line
-			eval $line
-			return 0
-		fi
-	done < ~/.aliasme/cmd
+    if [ -s ~/.aliasme/cmd ];then
+    	while read line
+    	do
+    		if [ $1 = $line ]; then
+    			read line
+    			eval $line
+    			return 0
+    		fi
+    	done < ~/.aliasme/cmd
+    fi
 	return 1
 }
 
@@ -121,16 +129,20 @@ _bashauto()
 	cur="${COMP_WORDS[COMP_CWORD]}"
 
 	opts=""
-	while read line
-	do
-		opts+=" $line"
-		read line
-	done < ~/.aliasme/path
-	while read line
-	do
-		opts+=" $line"
-		read line
-	done < ~/.aliasme/cmd
+    if [ -s ~/.aliasme/path ];then
+    	while read line
+    	do
+    		opts+=" $line"
+    		read line
+    	done < ~/.aliasme/path
+    fi
+    if [ -s ~/.aliasme/cmd ];then
+    	while read line
+    	do
+    		opts+=" $line"
+    		read line
+    	done < ~/.aliasme/cmd
+    fi
 	COMPREPLY=( $(compgen -W "${opts}" ${cur}) )
 	return 0
 }
@@ -140,16 +152,20 @@ _autocomplete()
 	if [ $ZSH_VERSION ]; then
 		# zsh
 		opts=""
-		while read line
-		do
-			opts+="$line "
-			read line
-		done < ~/.aliasme/path
-		while read line
-		do
-			opts+="$line "
-			read line
-		done < ~/.aliasme/cmd
+        if [ -s ~/.aliasme/path ];then
+    		while read line
+    		do
+    			opts+="$line "
+    			read line
+    		done < ~/.aliasme/path
+        fi
+        if [ -s ~/.aliasme/cmd ];then
+    		while read line
+    		do
+    			opts+="$line "
+    			read line
+    		done < ~/.aliasme/cmd
+        fi
 		compctl -k "($opts)" al
 	else
 		# bash
