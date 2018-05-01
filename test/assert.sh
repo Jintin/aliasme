@@ -1,138 +1,194 @@
-#!/bin/bash
-# assert.sh 1.0 - bash unit testing framework
-# Copyright (C) 2009, 2010, 2011, 2012 Robert Lehmann
-#
-# http://github.com/lehmannro/assert.sh
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published
-# by the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#!/usr/bin/env bash
 
-export DISCOVERONLY=${DISCOVERONLY:-}
-export DEBUG=${DEBUG:-}
-export STOP=${STOP:-}
-export INVARIANT=${INVARIANT:-}
+#####################################################################
+##
+## title: Assert Extension
+##
+## description:
+## Assert extension of shell (bash, ...)
+##   with the common assert functions
+## Function list based on:
+##   http://junit.sourceforge.net/javadoc/org/junit/Assert.html
+## Log methods : inspired by
+##	- https://natelandau.com/bash-scripting-utilities/
+## author: Mark Torok
+##
+## date: 07. Dec. 2016
+##
+## license: MIT
+##
+#####################################################################
 
-args="$(getopt -n "$0" -l verbose,help,stop,discover,invariant vhxdi $*)" \
-|| exit -1
-for arg in $args; do
-    case "$arg" in
-        -h)
-            echo "$0 [-vxid] [--verbose] [--stop] [--invariant] [--discover]"
-            echo "$(sed 's/./ /g' <<< "$0") [-h] [--help]"
-            exit 0;;
-        --help)
-            cat <<EOF
-Usage: $0 [options]
-Language-agnostic unit tests for subprocesses.
-Options:
-  -v, --verbose    generate output for every individual test case
-  -x, --stop       stop running tests after the first failure
-  -i, --invariant  do not measure timings to remain invariant between runs
-  -d, --discover   collect test suites only, do not run any tests
-  -h               show brief usage information and exit
-  --help           show this help message and exit
-EOF
-            exit 0;;
-        -v|--verbose)
-            DEBUG=1;;
-        -x|--stop)
-            STOP=1;;
-        -i|--invariant)
-            INVARIANT=1;;
-        -d|--discover)
-            DISCOVERONLY=1;;
-    esac
-done
+RED=$(tput setaf 1)
+GREEN=$(tput setaf 2)
+MAGENTA=$(tput setaf 5)
+NORMAL=$(tput sgr0)
+BOLD=$(tput bold)
 
-printf -v _indent "\n\t" # local format helper
+log_header() {
+  printf "\n${BOLD}${MAGENTA}==========  %s  ==========${NORMAL}\n" "$@" >&2
+  }
 
-_assert_reset() {
-    tests_ran=0
-    tests_failed=0
-    tests_errors=()
-    tests_starttime="$(date +%s.%N)" # seconds_since_epoch.nanoseconds
+log_success() {
+  printf "${GREEN}✔ %s${NORMAL}\n" "$@" >&2
 }
 
-assert_end() {
-    # assert_end [suite ..]
-    tests_endtime="$(date +%s.%N)"
-    tests="$tests_ran ${*:+$* }tests"
-    [[ -n "$DISCOVERONLY" ]] && echo "collected $tests." && _assert_reset && return
-    [[ -n "$DEBUG" ]] && echo
-    [[ -z "$INVARIANT" ]] && report_time=" in $(bc \
-        <<< "${tests_endtime%.N} - ${tests_starttime%.N}" \
-        | sed -e 's/\.\([0-9]\{0,3\}\)[0-9]*/.\1/' -e 's/^\./0./')s" \
-        || report_time=
-
-    if [[ "$tests_failed" -eq 0 ]]; then
-        echo "all $tests passed$report_time."
-    else
-        for error in "${tests_errors[@]}"; do echo "$error"; done
-        echo "$tests_failed of $tests failed$report_time."
-    fi
-    tests_failed_previous=$tests_failed
-    _assert_reset
-    return $tests_failed_previous
+log_failure() {
+  printf "${RED}✖ %s${NORMAL}\n" "$@" >&2
 }
 
-assert() {
-    # assert <command> <expected stdout> [stdin]
-    (( tests_ran++ ))
-    [[ -n "$DISCOVERONLY" ]] && return
-    # printf required for formatting
-    printf -v expected "x${2:-}" # x required to overwrite older results
-    result="$(eval 2>/dev/null $1 <<< ${3:-})"
-    # Note: $expected is already decorated
-    if [[ "x$result" == "$expected" ]]; then
-        [[ -n "$DEBUG" ]] && echo -n .
-        return
-    fi
-    [[ -n "$DEBUG" ]] && echo -n X
-    result="$(sed -e :a -e '$!N;s/\n/\\n/;ta' <<< "$result")"
-    [[ -z "$result" ]] && result="nothing" || result="\"$result\""
-    [[ -z "$2" ]] && expected="nothing" || expected="\"$2\""
-    failure="expected $expected${_indent}got $result"
-    report="test #$tests_ran \"$1${3:+ <<< $3}\" failed:${_indent}$failure"
-    tests_errors[$tests_failed]="$report"
-    (( tests_failed++ ))
-    if [[ -n "$STOP" ]]; then
-        [[ -n "$DEBUG" ]] && echo
-        echo "$report"
-        exit 1
-    fi
+
+assert_eq() {
+  local expected="$1"
+  local actual="$2"
+  local msg
+
+  if [ "$#" -ge 3 ]; then
+    msg="$3"
+  fi
+
+  if [ "$expected" == "$actual" ]; then
+    return 0
+  else
+    [ "${#msg}" -gt 0 ] && log_failure "$expected == $actual :: $msg" || true
+    return 1
+  fi
 }
 
-assert_raises() {
-    # assert_raises <command> <expected code> [stdin]
-    (( tests_ran++ ))
-    [[ -n "$DISCOVERONLY" ]] && return
-    (eval $1 <<< ${3:-}) > /dev/null 2>&1
-    status=$?
-    expected=${2:-0}
-    if [[ "$status" -eq "$expected" ]]; then
-        [[ -n "$DEBUG" ]] && echo -n .
-        return
-    fi
-    [[ -n "$DEBUG" ]] && echo -n X
-    failure="program terminated with code $status instead of $expected"
-    report="test #$tests_ran \"$1${3:+ <<< $3}\" failed:${_indent}$failure"
-    tests_errors[$tests_failed]="$report"
-    (( tests_failed++ ))
-    if [[ -n "$STOP" ]]; then
-        [[ -n "$DEBUG" ]] && echo
-        echo "$report"
-        exit 1
-    fi
+assert_not_eq() {
+  local expected="$1"
+  local actual="$2"
+  local msg
+
+  if [ "$#" -ge 3 ]; then
+    msg="$3"
+  fi
+
+  if [ ! "$expected" == "$actual" ]; then
+    return 0
+  else
+    [ "${#msg}" -gt 0 ] && log_failure "$expected != $actual :: $msg" || true
+    return 1
+  fi
 }
 
-_assert_reset
+assert_true() {
+  local actual
+  local msg
+
+  actual="$1"
+
+  if [ "$#" -ge 3 ]; then
+    msg="$3"
+  fi
+
+  assert_eq true "$actual" "$msg"
+  return "$?"
+}
+
+assert_false() {
+  local actual
+  local msg
+
+  actual="$1"
+
+  if [ "$#" -ge 3 ]; then
+    msg="$3"
+  fi
+
+  assert_eq false "$actual" "$msg"
+  return "$?"
+}
+
+assert_array_eq() {
+
+  declare -a expected=("${!1}")
+  # echo "AAE ${expected[@]}"
+
+  declare -a actual=("${!2}")
+  # echo "AAE ${actual[@]}"
+
+  local msg
+  if [ "$#" -ge 3 ]; then
+    msg="$3"
+  fi
+
+  local return_code
+  return_code=0
+  if [ ! "${#expected[@]}" == "${#actual[@]}" ]; then
+    return_code=1
+  fi
+
+  local i
+  for (( i=1; i < ${#expected[@]} + 1; i+=1 )); do
+    if [ ! "${expected[$i-1]}" == "${actual[$i-1]}" ]; then
+      return_code=1
+      break
+    fi
+  done
+
+  if [ "$return_code" == 1 ]; then
+    [ "${#msg}" -gt 0 ] && log_failure "(${expected[*]}) != (${actual[*]}) :: $msg" || true
+  fi
+
+  return "$return_code"
+}
+
+assert_array_not_eq() {
+
+  declare -a expected=("${!1}")
+  declare -a actual=("${!2}")
+
+  local msg
+  if [ "$#" -ge 3 ]; then
+    msg="$3"
+  fi
+
+  local return_code
+  return_code=1
+  if [ ! "${#expected[@]}" == "${#actual[@]}" ]; then
+    return_code=0
+  fi
+
+  local i
+  for (( i=1; i < ${#expected[@]} + 1; i+=1 )); do
+    if [ ! "${expected[$i-1]}" == "${actual[$i-1]}" ]; then
+      return_code=0
+      break
+    fi
+  done
+
+  if [ "$return_code" == 1 ]; then
+    [ "${#msg}" -gt 0 ] && log_failure "(${expected[*]}) == (${actual[*]}) :: $msg" || true
+  fi
+
+  return "$return_code"
+}
+
+assert_empty() {
+  local actual
+  local msg
+
+  actual="$1"
+
+  if [ "$#" -ge 2 ]; then
+    msg="$2"
+  fi
+
+  assert_eq "" "$actual" "$msg"
+  return "$?"
+}
+
+assert_not_empty() {
+  local actual
+  local msg
+
+  actual="$1"
+
+  if [ "$#" -ge 2 ]; then
+    msg="$2"
+  fi
+
+  assert_not_eq "" "$actual" "$msg"
+  return "$?"
+}

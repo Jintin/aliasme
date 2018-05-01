@@ -4,39 +4,41 @@
 . aliasme.sh
 
 testInit() {
-  if [[ ! -f ~/.aliasme/list ]]; then
-    mkdir -p ~/.aliasme && touch ~/.aliasme/list
+  if [[ ! -f ~/.aliasme/path ]]; then
+    mkdir -p ~/.aliasme && touch ~/.aliasme/path
   fi
 }
 
 testAlias() {
 
   path_alias=$(pwd)
+
   name1=testaaa
+  testPath $name1 $path_alias
+
   name2=testbbb
-  data=$(_list)
-  testAdd $name1 $path_alias "$data"
-  data1=$(_list)
-  testAdd $name2 $path_alias "$data1"
+  testPath $name2 $path_alias
 
-  testRemove $name2 "$data1"
-  testRemove $name1 "$data"
-
-  assert_end
+  testRemove $name1
+  testRemove $name2
 }
 
-testAdd() {
-  _add $1 $2
-  if [[ ! -z $3 ]]; then
-    assert _list "$3\n$1 : $2"
+testPath() {
+  _path $1 $2
+  if [[ $(_list) = *"$1 : $2"* ]]; then
+    log_success "path test success"
   else
-    assert _list "$1 : $2"
+    log_failure "path test failure"
   fi
 }
 
 testRemove() {
   _remove $1
-  assert _list "$2"
+  if [[ $(_list) = *"$1"* ]]; then
+    log_failure "remove test failure"
+  else
+    log_success "remove test success"
+  fi
 }
 
 testInit
