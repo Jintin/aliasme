@@ -48,8 +48,8 @@ _cmd() {
 	fi
 
 	#read path
-	cmd=$2
-	if [ -z $2 ]; then
+	cmd="$2"
+	if [ -z "$2" ]; then
 		read -ep "Input cmd to add:" cmd
 	fi
 
@@ -182,7 +182,7 @@ al(){
 		elif [ $1 = "path" ]; then
 			_path $2 $3
 		elif [ $1 = "cmd" ]; then
-			_cmd $2 $3
+			_cmd $2 "$3"
 		elif [ $1 = "rm" ]; then
 			_remove $2
 		elif [ $1 = "-h" ]; then
