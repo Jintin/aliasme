@@ -14,17 +14,19 @@ testAlias() {
   path_alias=$(pwd)
 
   name1=testaaa
-  testPath $name1 $path_alias
+  cmd1=cmdaaa
+  testAdd $name1 $cmd1
 
   name2=testbbb
-  testPath $name2 $path_alias
+  cmd2=cmdbbb
+  testAdd $name2 $cmd2
 
   testRemove $name1
   testRemove $name2
 }
 
-testPath() {
-  _path $1 $2
+testAdd() {
+  _add $1 $2
   if [[ $(_list) = *"$1 : $2"* ]]; then
     log_success "path test success"
   else

@@ -19,19 +19,12 @@ echo "source ~/.aliasme/aliasme.sh" >> ~/.bash_profile
 
 ## Usage
 ```bash
-$ al path [name] [value]       # add alias path with name
-$ al cmd [name] [command]      # add alias command with name
+$ al add [name] [command]      # add alias command with name
 $ al rm [name]                 # remove alias by name
 $ al ls                        # list all alias
 $ al [name]                    # execute alias associate with [name]
 $ al -v                        # version information
 $ al -h                        # help
-```
-
-## Migrate from 1.X to 2.X
-Please execute this command
-```
-mv ~/.aliasme/list ~/.aliasme/path
 ```
 
 ## Contributing
