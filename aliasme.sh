@@ -57,13 +57,13 @@ _remove() {
 
 _excute() {
     if [ -s ~/.aliasme/cmd ];then
-        while read line; do
+        while read -u9 line; do
             if [ "$1" = "$line" ]; then
-                read line
+                read -u9 line
     			eval $line
     			return 0
             fi
-        done < ~/.aliasme/cmd
+        done 9< ~/.aliasme/cmd
     fi
 	return 1
 }
