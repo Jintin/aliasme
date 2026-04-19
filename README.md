@@ -1,4 +1,5 @@
 # aliasme
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/dc29953069bf43438f4abac2629e4b5a)](https://app.codacy.com/gh/Jintin/aliasme/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![CI](https://github.com/Jintin/aliasme/actions/workflows/ci.yml/badge.svg)](https://github.com/Jintin/aliasme/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/alebcay/awesome-shell)
