@@ -11,22 +11,20 @@ testInit() {
 
 testAlias() {
 
-  path_alias=$(pwd)
-
   name1=testaaa
   cmd1=cmdaaa
-  testAdd $name1 $cmd1
+  testAdd "$name1" "$cmd1"
 
   name2=testbbb
   cmd2=cmdbbb
-  testAdd $name2 $cmd2
+  testAdd "$name2" "$cmd2"
 
-  testRemove $name1
-  testRemove $name2
+  testRemove "$name1"
+  testRemove "$name2"
 }
 
 testAdd() {
-  _add $1 $2
+  _add "$1" "$2"
   if [[ $(_list) = *"$1 : $2"* ]]; then
     log_success "path test success"
   else
@@ -35,7 +33,7 @@ testAdd() {
 }
 
 testRemove() {
-  _remove $1
+  _remove "$1"
   if [[ $(_list) = *"$1"* ]]; then
     log_failure "remove test failure"
   else
