@@ -8,6 +8,21 @@ A shell script to organize your alias in command line.
 
 ## Installation
 
+### Homebrew (Recommended)
+
+```bash
+brew tap Jintin/homebrew-tap
+brew install aliasme
+```
+
+Then add the following line to your shell profile (e.g., `~/.bash_profile` or `~/.zshrc`):
+
+```bash
+source $(brew --prefix)/opt/aliasme/libexec/aliasme.sh
+```
+
+### Manual
+
 - download script
 ```bash
   mkdir ~/.aliasme

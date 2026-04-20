@@ -1,69 +1,71 @@
 #!/usr/bin/env bash
 
-_list() {
+# Storage path
+ALIASME_DIR="${ALIASME_DIR:-$HOME/.aliasme}"
+ALIASME_CMD="$ALIASME_DIR/cmd"
 
-	if [ -s "$HOME/.aliasme/cmd" ];then
+_list() {
+	if [ -s "$ALIASME_CMD" ];then
 		while read -r name
 		do
 			if ! read -r value; then break; fi
 			echo "$name : $value"
-		done < "$HOME/.aliasme/cmd"
+		done < "$ALIASME_CMD"
 	fi
 }
 
 _add() {
-	#read name
+	# Ensure directory exists
+	mkdir -p "$ALIASME_DIR"
+
 	name=$1
 	if [ -z "$1" ]; then
 		read -rep "Input name to add:" name
 	fi
 
-	#read path
 	cmd="$2"
 	if [ -z "$2" ]; then
 		read -rep "Input cmd to add:" cmd
 	fi
 
-	echo "$name" >> "$HOME/.aliasme/cmd"
-	echo "$cmd" >> "$HOME/.aliasme/cmd"
+	echo "$name" >> "$ALIASME_CMD"
+	echo "$cmd" >> "$ALIASME_CMD"
     echo "add: $name -> $cmd"
 
 	_autocomplete
 }
 
 _remove() {
-	#read name
 	name=$1
 	if [ -z "$1" ]; then
 		read -pr "Input name to remove:" name
 	fi
 
-	# read and replace file
-    if [ -s "$HOME/.aliasme/cmd" ];then
-        touch "$HOME/.aliasme/cmdtemp"
+    if [ -s "$ALIASME_CMD" ];then
+        touch "$ALIASME_DIR/cmdtemp"
     	while read -r line
     	do
     		if [ "$line" = "$name" ]; then
     			read -r _ #skip one more line
                 echo "remove $name"
     		else
-    			echo "$line" >> "$HOME/.aliasme/cmdtemp"
+    			echo "$line" >> "$ALIASME_DIR/cmdtemp"
     		fi
-    	done < "$HOME/.aliasme/cmd"
-    	mv "$HOME/.aliasme/cmdtemp" "$HOME/.aliasme/cmd"
+    	done < "$ALIASME_CMD"
+    	mv "$ALIASME_DIR/cmdtemp" "$ALIASME_CMD"
     fi
 	_autocomplete
 }
 
 _excute() {
-    if [ -s "$HOME/.aliasme/cmd" ];then
+    if [ -s "$ALIASME_CMD" ];then
         while read -u9 -r line; do
             if [ "$1" = "$line" ]; then
                 read -u9 -r line
     			eval "$line"
     			return 0
             fi
-        done 9< "$HOME/.aliasme/cmd"
+        done 9< "$ALIASME_CMD"
     fi
 	return 1
 }
@@ -75,12 +77,12 @@ _bashauto()
 	cur="${COMP_WORDS[COMP_CWORD]}"
 
 	opts=""
-    if [ -s "$HOME/.aliasme/cmd" ];then
+    if [ -s "$ALIASME_CMD" ];then
     	while read -r line
     	do
     		opts+=" $line"
     		read -r _
-    	done < "$HOME/.aliasme/cmd"
+    	done < "$ALIASME_CMD"
     fi
 	# shellcheck disable=SC2207
 	COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -92,12 +94,12 @@ _autocomplete()
 	if [ -n "$ZSH_VERSION" ]; then
 		# zsh
 		opts=""
-        if [ -s "$HOME/.aliasme/cmd" ];then
+        if [ -s "$ALIASME_CMD" ];then
     		while read -r line
     		do
     			opts+="$line "
     			read -r _
-    		done < "$HOME/.aliasme/cmd"
+    		done < "$ALIASME_CMD"
         fi
 		# shellcheck disable=SC2154
 		compctl -k "($opts)" al
