@@ -128,7 +128,7 @@ al(){
 			echo "al -v                        # version information"
 			echo "al -h                        # help"
 		elif [ "$1" = "-v" ]; then
-			echo "aliasme 3.0.0"
+			echo "aliasme 3.1.0"
 			echo "visit https://github.com/Jintin/aliasme for more information"
 		else
 			if ! _excute "$1" ; then
