@@ -58,11 +58,42 @@ _remove() {
 }
 
 _excute() {
+    local alias_name="$1"
     if [ -s "$ALIASME_CMD" ];then
         while read -u9 -r line; do
-            if [ "$1" = "$line" ]; then
-                read -u9 -r line
-    			eval "$line"
+            if [ "$alias_name" = "$line" ]; then
+                read -u9 -r cmd
+                shift # Remove alias name, $@ now has arguments
+                
+                local final_cmd="$cmd"
+                local has_placeholder=false
+                
+                # Handle ?1, ?2, etc. (Positional)
+                local i=1
+                for arg in "$@"; do
+                    if [[ "$final_cmd" == *"?"$i* ]]; then
+                        final_cmd="${final_cmd//\?$i/$arg}"
+                        has_placeholder=true
+                    fi
+                    ((i++))
+                done
+                
+                # Handle ? (All arguments)
+                if [[ "$final_cmd" == *"?"* ]]; then
+                    # Double check it's not a positional one we missed (e.g. ?99)
+                    local tmp_cmd="${final_cmd//\?[0-9]/}"
+                    if [[ "$tmp_cmd" == *"?"* ]]; then
+                        final_cmd="${final_cmd//\?/"$*"}"
+                        has_placeholder=true
+                    fi
+                fi
+
+                if [ "$has_placeholder" = true ]; then
+                    eval "$final_cmd"
+                else
+                    # Default: append arguments if any
+                    eval "$cmd" "$@"
+                fi
     			return 0
             fi
         done 9< "$ALIASME_CMD"
@@ -124,14 +155,15 @@ al(){
 			echo "al add [name] [command]      # add alias command with name"
 			echo "al rm [name]                 # remove alias by name"
 			echo "al ls                        # alias list"
-			echo "al [name]                    # execute alias associate with [name]"
+			echo "al [name] [args]             # execute alias associate with [name]"
+			echo "                             # use ? for all args, ?1, ?2 for positional args"
 			echo "al -v                        # version information"
 			echo "al -h                        # help"
 		elif [ "$1" = "-v" ]; then
 			echo "aliasme 3.1.0"
 			echo "visit https://github.com/Jintin/aliasme for more information"
 		else
-			if ! _excute "$1" ; then
+			if ! _excute "$@"; then
 				echo "not found"
 			fi
 		fi
