@@ -92,6 +92,7 @@ _excute() {
                     eval "$final_cmd"
                 else
                     # Default: append arguments if any
+                    # shellcheck disable=SC2294
                     eval "$cmd" "$@"
                 fi
     			return 0

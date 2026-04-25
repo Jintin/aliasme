@@ -2,8 +2,10 @@
 
 . test/assert.sh
 # Mock ALIASME_DIR for testing to avoid touching user's real aliases
-export ALIASME_DIR="/tmp/aliasme_test_$(date +%s)"
-export ALIASME_CMD="$ALIASME_DIR/cmd"
+ALIASME_DIR="/tmp/aliasme_test_$(date +%s)"
+export ALIASME_DIR
+ALIASME_CMD="$ALIASME_DIR/cmd"
+export ALIASME_CMD
 mkdir -p "$ALIASME_DIR"
 
 . aliasme.sh
@@ -34,9 +36,17 @@ testRemove() {
 testExecute() {
   local name="$1"
   shift
-  local expected="${@: -1}" # last argument is expected output
+  local expected
+  expected="${*:$#:1}" # last argument is expected output
   # All arguments except the last one are passed to 'al'
-  local args=("${@:1:$#-1}")
+  local args=()
+  local i=1
+  for arg in "$@"; do
+    if [ $i -lt "$#" ]; then
+        args+=("$arg")
+    fi
+    ((i++))
+  done
   
   # Capture output of execution
   local actual
