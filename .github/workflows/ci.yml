@@ -7,7 +7,7 @@ on:
     branches: [ master, main ]
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,5 +18,22 @@ jobs:
       - name: Run ShellCheck
         run: shellcheck aliasme.sh test/*.sh
 
+  test:
+    # The script is sourced into the user's shell, so it has to be exercised
+    # under both supported shells; most users install via Homebrew on macOS,
+    # where zsh is the default.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        shell: [bash, zsh]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install zsh
+        if: matrix.shell == 'zsh' && runner.os == 'Linux'
+        run: sudo apt-get install -y zsh
+
       - name: Run Tests
-        run: make test
+        run: ${{ matrix.shell }} test/aliastest.sh

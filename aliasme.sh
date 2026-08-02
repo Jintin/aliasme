@@ -10,7 +10,7 @@ _list() {
 		while IFS= read -r name
 		do
 			if ! IFS= read -r value; then break; fi
-			echo "$name : $value"
+			printf '%s : %s\n' "$name" "$value"
 		done < "$ALIASME_CMD"
 	fi
 }
@@ -52,13 +52,12 @@ _add() {
 	fi
 
 	if _find "$name"; then
-		echo "$name already exists, remove it first: al rm $name"
+		printf '%s already exists, remove it first: al rm %s\n' "$name" "$name"
 		return 1
 	fi
 
-	echo "$name" >> "$ALIASME_CMD"
-	echo "$cmd" >> "$ALIASME_CMD"
-	echo "add: $name -> $cmd"
+	printf '%s\n%s\n' "$name" "$cmd" >> "$ALIASME_CMD"
+	printf 'add: %s -> %s\n' "$name" "$cmd"
 
 	_autocomplete
 }
@@ -78,34 +77,44 @@ _remove() {
 		do
 			if ! IFS= read -r value; then break; fi
 			if [ "$line" = "$name" ]; then
-				echo "remove $name"
+				printf 'remove %s\n' "$name"
 				found=0
 			else
-				echo "$line" >> "$ALIASME_DIR/cmdtemp"
-				echo "$value" >> "$ALIASME_DIR/cmdtemp"
+				printf '%s\n%s\n' "$line" "$value" >> "$ALIASME_DIR/cmdtemp"
 			fi
 		done < "$ALIASME_CMD"
 		mv "$ALIASME_DIR/cmdtemp" "$ALIASME_CMD"
 	fi
 	if [ "$found" -ne 0 ]; then
-		echo "not found: $name"
+		printf 'not found: %s\n' "$name"
 	fi
 	_autocomplete
 	return "$found"
 }
 
 _excute() {
-	local name value
+	# Prefixed names: the stored command is eval'd in this scope, so plain
+	# names like "name" would shadow the user's own variables.
+	local _al_name _al_value _al_found
+	# zsh aborts on a glob that matches nothing, which would break any stored
+	# command containing a literal ? or * (a URL query string, typically).
+	if [ -n "$ZSH_VERSION" ]; then
+		setopt local_options no_nomatch
+	fi
+	_al_found=1
 	if [ -s "$ALIASME_CMD" ];then
-		while IFS= read -u9 -r name; do
-			if ! IFS= read -u9 -r value; then break; fi
-			if [ "$1" = "$name" ]; then
-				eval "$value"
-				return $?
+		while IFS= read -u9 -r _al_name; do
+			if ! IFS= read -u9 -r _al_value; then break; fi
+			if [ "$1" = "$_al_name" ]; then
+				_al_found=0
+				break
 			fi
 		done 9< "$ALIASME_CMD"
 	fi
-	return 1
+	[ "$_al_found" -eq 0 ] || return 1
+
+	# Run with the storage file closed so the command cannot inherit fd 9.
+	eval "$_al_value"
 }
 
 _bashauto()
@@ -167,13 +176,13 @@ al(){
 			echo "al -v                        # version information"
 			echo "al -h                        # help"
 		elif [ "$1" = "-v" ]; then
-			echo "aliasme 3.1.0"
+			echo "aliasme 3.1.1"
 			echo "visit https://github.com/Jintin/aliasme for more information"
 		else
 			if _find "$1"; then
 				_excute "$1"
 			else
-				echo "not found: $1"
+				printf 'not found: %s\n' "$1"
 				return 1
 			fi
 		fi
