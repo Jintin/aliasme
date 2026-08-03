@@ -15,12 +15,13 @@ trap cleanup EXIT
 
 failures=0
 
+# Names are prefixed: assert.sh declares "expected"/"actual" as arrays.
 check() {
-  local desc="$1" expected="$2" actual="$3"
-  if [ "$expected" = "$actual" ]; then
-    log_success "$desc"
+  local _desc="$1" _want="$2" _got="$3"
+  if [ "$_want" = "$_got" ]; then
+    log_success "$_desc"
   else
-    log_failure "$desc -- expected [$expected] got [$actual]"
+    log_failure "$_desc -- expected [$_want] got [$_got]"
     failures=$((failures + 1))
   fi
 }
@@ -39,7 +40,9 @@ check "list renders both entries" \
 world : echo world" "$(_list)"
 
 check "duplicate name is rejected" "1" "$(_add hello "echo other" > /dev/null 2>&1; echo $?)"
-check "empty name is rejected" "1" "$(_add "" "" > /dev/null 2>&1; echo $?)"
+# stdin is closed: with no arguments _add prompts for them interactively,
+# and the suite must not block waiting on a terminal.
+check "empty name is rejected" "1" "$(_add "" "" > /dev/null 2>&1 < /dev/null; echo $?)"
 
 log_header "Remove"
 
@@ -101,6 +104,7 @@ check "an intentional glob still expands" "$ALIASME_DIR/globbed.txt" "$(al glob)
 log_header "Variable isolation"
 
 reset_store
+# shellcheck disable=SC2016  # the command is stored literally, on purpose
 _add show 'echo "[$name][$value][$line]"' > /dev/null
 name=OUTER
 value=OUTER
